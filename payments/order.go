@@ -1,38 +1,46 @@
 package payments
 
-import "fmt"
-import "errors"
-import stripe "github.com/stripe/stripe-go"
-import order "github.com/stripe/stripe-go/order"
+type Order struct {
+  ID string
 
-func (conf *Config) CreateOrder(params *stripe.OrderParams) (*stripe.Order, error) {
-  stripe.Key = conf.Key
-
-  return order.New(params)
+  // TODO: all necessary order fields should be there
 }
 
-func (conf *Config) PayOrder(id string, params *stripe.OrderPayParams) (*stripe.Order, error) {
-  stripe.Key = conf.Key
-
-  target, err := order.Pay(id, params)
-
-  if target.Status != stripe.StatusPaid {
-    return nil, errors.New(fmt.Sprintf("Order status not set to paid: %v", target.Status))
-	}
-
-  return target, err
+type OrderParams struct {
+	Items    []*OrderItemParams
+	Shipping *ShippingParams
 }
 
-// Pay specific order by a card number
-func (conf *Config) PayOrderWithCard(id string, params *stripe.OrderPayParams, cardParams *stripe.CardParams) (*stripe.Order, error) {
-  stripe.Key = conf.Key
+type OrderItemParams struct {
+	Description string
+	Parent      string
+	Type        string
+}
 
-  params.SetSource(cardParams)
-  target, err := order.Pay(id, params)
+type ShippingParams struct {
+	Name    string
+	Address *AddressParams
+}
 
-  if target.Status != stripe.StatusPaid {
-    return nil, errors.New(fmt.Sprintf("Order status not set to paid: %v", target.Status))
-	}
+type AddressParams struct {
+	Line1      string
+	City       string
+	PostalCode string
+	Country    string
+}
 
-  return target, err
+type OrderPayParams struct {
+	Customer string
+}
+
+type OrderFactory struct {
+  IPaymentProvider
+}
+
+func (self *OrderFactory) New(items []*OrderItemParams, params *OrderParams) (*Order, error) {
+  return self.NewOrder(items, params)
+}
+
+func (self *OrderFactory) Pay(id string, params *OrderPayParams) (*Order, error) {
+  return self.PayOrder(id, params)
 }

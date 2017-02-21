@@ -1,53 +1,36 @@
 package payments
 
-import stripe "github.com/stripe/stripe-go"
-import product "github.com/stripe/stripe-go/product"
-import sku "github.com/stripe/stripe-go/sku"
+type Product struct {
+  ID string
+  Skus *SKUList
+
+  // TODO: all necessary product fields should be there
+}
+
+type ProductParams struct {
+  Name string
+}
+
+type ProductFactory struct {
+  IPaymentProvider
+}
 
 // Create new product
-func (conf *Config) CreateProduct(params *stripe.ProductParams) (*stripe.Product, error) {
-  stripe.Key = conf.Key
-
-  return product.New(params)
+func (self *ProductFactory) New(params *ProductParams) (*Product, error) {
+  return self.NewProduct(params)
 }
 
 // Create new product with a SKU
-func (conf *Config) CreateProductWithSKU(params *stripe.ProductParams, skuParams *stripe.SKUParams) (*stripe.Product, error) {
-  stripe.Key = conf.Key
-
-  target, err := product.New(params)
-  if err != nil {
-    return nil, err
-  }
-
-  skuParams.Product = target.ID
-  if _, err := sku.New(skuParams); err != nil {
-    return nil, err
-  }
-
-  return target, nil
+func (self *ProductFactory) NewWithSKU(params *ProductParams, skuParams *SKUParams) (*Product, error) {
+  return self.NewProductWithSKU(params, skuParams)
 }
 
 // Retrieve a product by ID
-func (conf *Config) GetProduct(productId string) (*stripe.Product, error) {
-  stripe.Key = conf.Key
-
-  return product.Get(productId)
+func (self *ProductFactory) Get(productId string) (*Product, error) {
+  return self.GetProduct(productId)
 }
 
 // Retrieve all existing products
-func (conf *Config) GetProducts() ([]*stripe.Product) {
-  stripe.Key = conf.Key
-
-  var products []*stripe.Product
-
-  params := &stripe.ProductListParams{}
-  iterator := product.List(params)
-
-  for iterator.Next() {
-    item := iterator.Product()
-    products = append(products, item)
-  }
-
-  return products
+func (self *ProductFactory) List() ([]*Product) {
+  return self.GetProducts()
 }
