@@ -1,6 +1,6 @@
 # Simple Stripe wrapper on Go
 
-I just started practicing golang, so decided to create an application to improve my skills here. Looking forward to getting feedbacks from you, critical messages are very appreciated. Thank you in advance!
+Looking forward to getting feedbacks from you, critical messages are very appreciated. Thank you in advance!
 
 Used design patterns:
 
